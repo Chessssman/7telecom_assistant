@@ -1,5 +1,6 @@
 import anthropic
 
+
 class ClaudeAssistant:
     def __init__(self, api_key):
         self.client = anthropic.Anthropic(api_key=api_key)
@@ -22,6 +23,11 @@ class ClaudeAssistant:
                     {"role": "user", "content": prompt}
                 ]
             )
-            return response.content[0].text
+
+            # Correctly extract text from response
+            return response.content[0].text if response.content else "No response generated."
+
+        except AttributeError as e:
+            return f"API Configuration Error: {str(e)}. Check Anthropic library version."
         except Exception as e:
             return f"Error generating response: {str(e)}"
