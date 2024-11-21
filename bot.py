@@ -28,13 +28,22 @@ class TelegramDocumentBot:
         """
         Register bot message handlers with correct async handling
         """
-        self.dp.message.register(start_command, Command(commands=['start']))
-        self.dp.message.register(help_command, Command(commands=['help']))
+        # Start command handler
+        self.dp.message.register(
+            start_command,
+            Command(commands=['start'])
+        )
 
-        # Use F.text to handle all text messages that are not commands
+        # Help command handler
+        self.dp.message.register(
+            help_command,
+            Command(commands=['help'])
+        )
+
+        # Text message handler for questions
         self.dp.message.register(
             lambda message: handle_question(message, self.bot, self.assistant),
-            ~Command(commands=['start', 'help']) & F.text
+            F.text & ~Command(commands=['start', 'help'])
         )
 
     async def start(self):
