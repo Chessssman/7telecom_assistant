@@ -2,6 +2,7 @@ import asyncio
 import logging
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
+from aiogram.types import Message
 
 from config import TOKEN, DOCUMENTS_DIR, EMBEDDING_MODEL, SIMILARITY_THRESHOLD
 from document_assistant import DocumentAssistant
@@ -26,7 +27,7 @@ class TelegramDocumentBot:
 
     def register_handlers(self):
         """
-        Register bot message handlers with correct async handling
+        Register bot message handlers
         """
         # Start command handler
         self.dp.message.register(
@@ -42,15 +43,29 @@ class TelegramDocumentBot:
 
         # Text message handler for questions
         self.dp.message.register(
-            lambda message: handle_question(message, self.bot, self.assistant),
-            F.text & ~Command(commands=['start', 'help'])
+            self.process_message,
+            F.text
         )
+
+    async def process_message(self, message: Message):
+        """
+        Process incoming text messages
+        """
+        try:
+            logging.info(f"Received message: {message.text}")
+            await handle_question(message, self.bot, self.assistant)
+        except Exception as e:
+            logging.error(f"Error processing message: {e}")
+            await message.answer("Sorry, an error occurred while processing your message.")
 
     async def start(self):
         """
         Start the bot
         """
-        logging.basicConfig(level=logging.INFO)
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
 
         try:
             await self.dp.start_polling(self.bot)
